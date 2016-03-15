@@ -5,15 +5,9 @@
 # http://shiny.rstudio.com
 #
 
-library(shiny)
-library(data.table)
-library(nycflights13)
-library(ggplot2)
+# Common variables, libraries etcs
+source("Common_Sense.R", local=TRUE)
 
-flights.DT <- data.table(flights)
-flights.DT[,c("yearLog", "monthLog", "dayLog", "dep_timeLog", "arr_timeLog", "air_timeLog", "distanceLog", "hourLog", "minuteLog"):=.(log(year), log(month), log(day), log(dep_time), log(arr_time), log(air_time), log(distance), log(hour), log(minute))]
-flights.DT[,date := paste(year,"-", month, "-", day, sep = "")]
-options(stringsAsFactors = FALSE)
 
 shinyUI(fluidPage(
 
@@ -48,9 +42,9 @@ shinyUI(fluidPage(
     mainPanel(
       tabsetPanel(
         tabPanel("Statistics",tableOutput("sumstat")),
-        tabPanel("Distance&Date",tableOutput("ddlist")),
+        tabPanel("Distance&Date",dataTableOutput("ddlist")),
         tabPanel("Histograms",plotOutput("distPlot")),
-        tabPanel("Nr of NAs",tableOutput("nas"))
+        tabPanel("Nr of NAs",dataTableOutput("nas"))
       )
     )
   )

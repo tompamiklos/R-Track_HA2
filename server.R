@@ -5,15 +5,9 @@
 # http://shiny.rstudio.com
 #
 
-library(shiny)
-library(data.table)
-library(nycflights13)
-library(ggplot2)
+# Common variables, libraries etcs
+source("Common_Sense.R", local=TRUE)
 
-flights.DT <- data.table(flights)
-flights.DT[,c("yearLog", "monthLog", "dayLog", "dep_timeLog", "arr_timeLog", "air_timeLog", "distanceLog", "hourLog", "minuteLog"):=.(log(year), log(month), log(day), log(dep_time), log(arr_time), log(air_time), log(distance), log(hour), log(minute))]
-flights.DT[,date := paste(year,"-", month, "-", day, sep = "")]
-options(stringsAsFactors = FALSE)
 
 shinyServer(function(input, output) {
 
@@ -21,23 +15,24 @@ shinyServer(function(input, output) {
   output$distPlot <- renderPlot({
     
     if (input$log == TRUE){
-    feat = paste(input$feat,"Log", sep = "")} else {feat=input$feat}
-    validate(
-      need(sum(names(flights.DT) == feat)!=0, "Sorry, no log() data for this feature!")
-    )
-    ggplot(data = flights.DT, aes_string(x = feat))+
-      geom_histogram(bins = input$bins)
+      ggplot(data = flights.DT, aes_string(x = input$feat))+
+        scale_x_log10()+
+        geom_histogram(bins = input$bins)} 
+    else {
+      ggplot(data = flights.DT, aes_string(x = input$feat))+
+      geom_histogram(bins = input$bins)}
 
   })
   
-  output$ddlist <- renderTable({
+  output$ddlist <- renderDataTable({
     
     validate(
       need(input$dateS<=input$dateF, "Uhmm, something is wrong with the dates. Check dates, please!")
     )
-    head(flights.DT[date>=as.Date(input$dateS)&date<=as.Date(input$dateF)&distance<=input$dist, .(date, distance, carrier, tailnum, flight, origin, dest)],5)
-    ### Sorry, I had to use head(...,5), because otherwise it took ages to run this code
-  })
+    flights.DT[date>=as.Date(input$dateS)&date<=as.Date(input$dateF)&distance<=input$dist, 
+               .(date, distance, carrier, tailnum, flight, origin, dest)]
+  }, options = list(lengthMenu = list(c(10, 100, 1000, -1), list("10", "100", "1000", "All")), pageLength = 10)
+  )
  
   
   output$sumstat <- renderTable({
@@ -45,20 +40,24 @@ shinyServer(function(input, output) {
     summary(flights.DT)
   }) 
   
-  output$nas <- renderTable({
-    DT.NA <- data.frame("Feature" = character(), "NrNAs" = integer())
-    #setDT(DT.NA)
-    setDF(flights.DT)
+  output$nas <- renderDataTable({
+    DT.NA <- data.table("Feature" = character(), "NrNAs" = integer())
     for (i in 1:length(names(flights.DT))){
-      DT.NA <- rbind(DT.NA, c(names(flights.DT)[i],sum(is.na(flights.DT[i]))))
-      cat(paste(names(flights.DT)[i], " ", i, ","))
+      DT.NA <- rbind(DT.NA, list(names(flights.DT)[i],flights.DT[is.na(get(names(flights.DT)[i]))==TRUE, .N]))
     }
+    
+    #renderTable({
+    #DT.NA <- data.frame("Feature" = character(), "NrNAs" = integer())
+    #setDF(flights.DT)
+    #for (i in 1:length(names(flights.DT))){
+    #  DT.NA <- rbind(DT.NA, c(names(flights.DT)[i],sum(is.na(flights.DT[i]))))
+    #  cat(paste(names(flights.DT)[i], " ", i, ","))
+    #}
    
     colnames(DT.NA) <- c("Features", "Nr of NAs")
-    setDT(flights.DT)
     DT.NA
-  
-  }) 
+  }, options = list(lengthMenu = list(c(5, 10, 20, -1), list("5", "10", "20", "All")), pageLength = 10)
+  ) 
   
   
   
