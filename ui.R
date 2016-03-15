@@ -12,15 +12,13 @@ source("Common_Sense.R", local=TRUE)
 shinyUI(fluidPage(
 
   
-  titlePanel("Eploratory analysis - nycflights13"),
+  titlePanel("Exploratory analysis - nycflights13"),
 
   sidebarLayout(
     sidebarPanel(
       titlePanel("Date&Distance filter"),
-      selectInput("dateS", "Pick a start date", selected = "2013-1-1", 
-                  choices = c(unique(flights.DT$date))),
-      selectInput("dateF", "Pick a finish date", selected = "2013-1-1", 
-                  choices = c(unique(flights.DT$date))),
+      dateRangeInput ("dates", "Pick dates", start = as.Date("2013-1-1"), end = as.Date("2013-1-1"), 
+                  separator = " to "),
       sliderInput("dist",
                   "Maximum distance:",
                   min = 1,

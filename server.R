@@ -26,10 +26,10 @@ shinyServer(function(input, output) {
   
   output$ddlist <- renderDataTable({
     
-    validate(
-      need(input$dateS<=input$dateF, "Uhmm, something is wrong with the dates. Check dates, please!")
-    )
-    flights.DT[date>=as.Date(input$dateS)&date<=as.Date(input$dateF)&distance<=input$dist, 
+    #validate(
+      #need(input$dates[2]<=input$dates[1], "Uhmm, something is wrong with the dates. Check dates, please!")
+    #)
+    flights.DT[date>=as.Date(input$dates[1], origin = "1970-01-01")&date<=as.Date(input$dates[2], origin = "1970-01-01")&distance<=input$dist, 
                .(date, distance, carrier, tailnum, flight, origin, dest)]
   }, options = list(lengthMenu = list(c(10, 100, 1000, -1), list("10", "100", "1000", "All")), pageLength = 10)
   )

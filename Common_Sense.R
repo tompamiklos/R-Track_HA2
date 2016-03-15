@@ -9,3 +9,4 @@ flights.DT[,c("yearLog", "monthLog", "dayLog", "dep_timeLog", "arr_timeLog", "ai
 flights.DT[,date := paste(year,"-", month, "-", day, sep = "")]
 options(stringsAsFactors = FALSE)
 
+
